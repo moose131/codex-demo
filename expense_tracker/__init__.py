@@ -1,0 +1,2 @@
+"""Tiny CLI expense tracker."""
+
