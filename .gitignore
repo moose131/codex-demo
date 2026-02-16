@@ -1,0 +1,4 @@
+
+# Demo output files
+expenses*.json
+out*.csv
