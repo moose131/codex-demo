@@ -17,6 +17,7 @@ python -m expense_tracker add 12.50 food "Lunch with team"
 python -m expense_tracker add 30 transport
 python -m expense_tracker list
 python -m expense_tracker total
+python -m expense_tracker export expenses.csv
 ```
 
 Data is stored in `expenses.json` at the repo root by default.
@@ -34,4 +35,3 @@ Run tests:
 ```bash
 pytest -q
 ```
-

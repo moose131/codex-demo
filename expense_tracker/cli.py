@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import argparse
+import csv
 import os
+from datetime import datetime, timezone
 from pathlib import Path
 
 from .storage import StorageError, default_data_file, load_expenses, save_expenses
@@ -41,6 +43,10 @@ def build_parser() -> argparse.ArgumentParser:
     total_parser = subparsers.add_parser("total", help="Show the total amount spent.")
     total_parser.set_defaults(func=handle_total)
 
+    export_parser = subparsers.add_parser("export", help="Export all expenses to a CSV file.")
+    export_parser.add_argument("csv_filename", help="Output CSV filename/path.")
+    export_parser.set_defaults(func=handle_export)
+
     return parser
 
 
@@ -48,6 +54,7 @@ def handle_add(args: argparse.Namespace) -> int:
     data_file = data_file_from_env()
     expenses = load_expenses(data_file)
     entry = {
+        "time": datetime.now(timezone.utc).isoformat(),
         "amount": args.amount,
         "category": args.category,
         "note": args.note,
@@ -81,6 +88,29 @@ def handle_total(args: argparse.Namespace) -> int:
     return 0
 
 
+def handle_export(args: argparse.Namespace) -> int:
+    data_file = data_file_from_env()
+    expenses = load_expenses(data_file)
+    output = Path(args.csv_filename)
+    try:
+        with output.open("w", newline="", encoding="utf-8") as csv_file:
+            writer = csv.writer(csv_file)
+            writer.writerow(["time", "amount", "category", "note"])
+            for item in expenses:
+                writer.writerow(
+                    [
+                        item.get("time", ""),
+                        item.get("amount", ""),
+                        item.get("category", ""),
+                        item.get("note", ""),
+                    ]
+                )
+    except OSError as exc:
+        raise StorageError(f"Could not write {output}") from exc
+    print(f"Exported {len(expenses)} expense(s) to {output}")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
@@ -88,4 +118,3 @@ def main(argv: list[str] | None = None) -> int:
         return args.func(args)
     except StorageError as exc:
         parser.exit(status=1, message=f"error: {exc}\n")
-

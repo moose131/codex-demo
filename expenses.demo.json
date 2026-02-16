@@ -1,7 +1,14 @@
 [
   {
+    "time": "2026-02-16T14:22:32.004198+00:00",
     "amount": 12.5,
     "category": "coffee",
     "note": "latte"
+  },
+  {
+    "time": "2026-02-16T14:22:32.052572+00:00",
+    "amount": 30.0,
+    "category": "groceries",
+    "note": ""
   }
 ]

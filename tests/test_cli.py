@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import csv
 import json
 import os
 import subprocess
@@ -78,5 +79,54 @@ def test_invalid_json_file_returns_error(tmp_path: Path) -> None:
 def test_add_persists_to_json_file(tmp_path: Path) -> None:
     run_cli(tmp_path, "add", "3.25", "coffee", "latte")
     stored = json.loads((tmp_path / "expenses.json").read_text(encoding="utf-8"))
-    assert stored == [{"amount": 3.25, "category": "coffee", "note": "latte"}]
+    assert len(stored) == 1
+    assert stored[0]["amount"] == 3.25
+    assert stored[0]["category"] == "coffee"
+    assert stored[0]["note"] == "latte"
+    assert isinstance(stored[0]["time"], str)
+    assert stored[0]["time"]
 
+
+def test_export_writes_csv_with_expected_columns(tmp_path: Path) -> None:
+    run_cli(tmp_path, "add", "12.5", "food", "lunch")
+    run_cli(tmp_path, "add", "8", "transport")
+
+    csv_file = tmp_path / "out.csv"
+    result = run_cli(tmp_path, "export", str(csv_file))
+    assert result.returncode == 0
+    assert f"Exported 2 expense(s) to {csv_file}" in result.stdout
+
+    with csv_file.open(newline="", encoding="utf-8") as f:
+        rows = list(csv.reader(f))
+    assert rows[0] == ["time", "amount", "category", "note"]
+    assert rows[1][1:] == ["12.5", "food", "lunch"]
+    assert rows[2][1:] == ["8.0", "transport", ""]
+    assert rows[1][0]
+    assert rows[2][0]
+
+
+def test_export_empty_data_writes_header_only(tmp_path: Path) -> None:
+    csv_file = tmp_path / "empty.csv"
+    result = run_cli(tmp_path, "export", str(csv_file))
+    assert result.returncode == 0
+    assert f"Exported 0 expense(s) to {csv_file}" in result.stdout
+
+    with csv_file.open(newline="", encoding="utf-8") as f:
+        rows = list(csv.reader(f))
+    assert rows == [["time", "amount", "category", "note"]]
+
+
+def test_export_handles_legacy_records_without_time(tmp_path: Path) -> None:
+    data_file = tmp_path / "expenses.json"
+    data_file.write_text(
+        json.dumps([{"amount": 10, "category": "misc", "note": "old"}]),
+        encoding="utf-8",
+    )
+    csv_file = tmp_path / "legacy.csv"
+
+    result = run_cli(tmp_path, "export", str(csv_file))
+    assert result.returncode == 0
+
+    with csv_file.open(newline="", encoding="utf-8") as f:
+        rows = list(csv.reader(f))
+    assert rows == [["time", "amount", "category", "note"], ["", "10", "misc", "old"]]

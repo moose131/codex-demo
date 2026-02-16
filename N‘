@@ -1,0 +1,43 @@
+# AGENTS.md（Codex 中文示例）
+
+## 工作规则
+- 除非被阻塞，否则不要反复询问，做出合理假设并继续。
+- 每增加或修改功能时，都要同时添加或更新自动化测试。
+- 完成任务前运行测试并报告结果。
+- 保持改动小且容易审查。
+
+## 完成标准
+- 所有测试通过。
+- CLI 帮助信息清晰。
+- 边界情况有测试覆盖。
+
+## 项目需求
+构建一个基于 Python 的命令行记账工具。
+
+命令包括：
+- add <金额> <类别> [备注]
+- list
+- total
+
+数据必须以 JSON 文件形式保存在项目目录中。# AGENTS.md (Codex demo)
+
+## Working rules
+- Do not ask me questions unless you are blocked; make reasonable assumptions and proceed.
+- Always add or update automated tests for any behavior you add.
+- Always run tests locally before finishing and report the results.
+- Keep changes small and easy to review.
+
+## Definition of done
+- All tests pass.
+- Clear CLI help text.
+- Edge cases covered by tests.
+
+## Project
+Build a tiny CLI expense tracker in Python.
+
+Commands:
+- add <amount> <category> [note]
+- list
+- total
+
+Data must persist in a local JSON file inside the repo.
